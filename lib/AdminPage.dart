@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-import 'ReviewPage.dart';
 
 class AdminPage extends StatefulWidget {
   @override
@@ -146,14 +145,6 @@ class _AdminPageState extends State<AdminPage> {
                           ),
                           DataCell(
                             InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ReviewPage(documentId: document.id),
-                                  ),
-                                );
-                              },
                               child: Text(data['reporter']),
                             ),
                           ),
