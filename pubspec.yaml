@@ -1,0 +1,53 @@
+name: qr_code_generator
+description: QR Code Generator App In Flutter With Save As Image Feature.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  qr_flutter: ^4.1.0
+  path_provider: ^2.1.1
+  flutter_localization: ^0.2.0
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.18.1
+  image_picker: ^1.0.7
+  multiple_images_picker: ^1.0.1
+  file_picker: ^6.1.1
+  video_player: ^2.8.2
+  mailer: ^6.0.1
+  flutter_email_sender: ^6.0.2
+  flutter_dotenv: ^5.1.0
+  bitsdojo_window: ^0.1.6
+  firebase_core: ^2.24.2
+  cloud_firestore: ^4.14.0
+  firebase_storage: ^11.6.0
+  google_maps_flutter: ^2.5.3
+  syncfusion_flutter_datagrid: ^24.1.47
+  uuid: ^4.3.3
+  cached_network_image: ^3.3.1
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - image/
+l10n:
+  arb-dir: lib/l10n
+  template-arb-file: lib/l10n/app_en.arb
+  output-localization-file: lib/generated/l10n.dart
+  # pdfx: ^2.5.0
+  pdfx:
+    git:
+      url: 'https://github.com/ScerIO/packages.flutter'
+      ref: '4be9de9ffed5398fd7d5f44bbb07dcd3d3f1711b'
+      path: packages/pdfx
