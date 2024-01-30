@@ -16,6 +16,8 @@ class FormPage extends StatefulWidget {
   @override
   _FormPageState createState() => _FormPageState();
 }
+bool _isLoading = false;
+bool _isButtonEnabled = true; // Add this line
 
 class _FormPageState extends State<FormPage> {
   late DateTime currentDate;
@@ -206,9 +208,11 @@ class _FormPageState extends State<FormPage> {
                   const SizedBox(height: 50),
                   ElevatedButton(
                     style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(
-                            Color.fromARGB(255, 13, 19, 140))),
-                    onPressed:  _saveFormDataToFirebase ,
+                      backgroundColor: MaterialStateProperty.all<Color>(
+                        Color.fromARGB(255, 13, 19, 140),
+                      ),
+                    ),
+                    onPressed: _isButtonEnabled ? _saveFormDataToFirebase : null, // Modify this line
                     child: const Text(
                       'ارسال',
                       style: TextStyle(color: Colors.white),
@@ -335,7 +339,16 @@ class _FormPageState extends State<FormPage> {
 
 
   Future<void> _saveFormDataToFirebase() async {
+    setState(() {
+      _isLoading = true;
+      _isButtonEnabled = false; // Disable the button
+
+    });
     try {
+      setState(() {
+        _isLoading = false;
+        _isButtonEnabled = true; // Enable the button again
+      });
       List<String> imageUrls = [];
       if (_selectedImageBytesList.isNotEmpty) {
         imageUrls = await _uploadImagesToFirebase();
@@ -393,9 +406,23 @@ class _FormPageState extends State<FormPage> {
           );
         },
       );
-    } catch (e) {
-      print('Error saving form data: $e');
 
+      // Sign out of the form
+      titleController.clear();
+      ReporterController.clear();
+      setState(() {
+        selectedCategory = categories.first;
+        selectedSite = null;
+        selectedSubSite = null;
+        _selectedImageBytesList.clear();
+      });
+    } catch (e) {
+
+      print('Error saving form data: $e');
+      setState(() {
+        _isLoading = false;
+        _isButtonEnabled = true; // Enable the button again
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('حدث خطأ أثناء حفظ البيانات'),

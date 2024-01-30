@@ -14,12 +14,19 @@ class _AdminPageState extends State<AdminPage> {
 
   Map<String, String> selectedStatus = {};
   late String downloadURL; // Variable to store the download URL
+
   Future<void> downloadURLExample() async {
     downloadURL = await FirebaseStorage.instance
         .ref()
-        .child("images") // Specify the path to your image in Firebase Storage
+        .child("images")
         .getDownloadURL();
-    debugPrint(downloadURL.toString());
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Call the downloadURLExample function when the page initializes
+    downloadURLExample();
   }
 
   @override
@@ -88,7 +95,7 @@ class _AdminPageState extends State<AdminPage> {
                       ],
                       rows: filteredData.map<DataRow>((document) {
                         final Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                        List<String> imageUrls = List<String>.from(data['imageUrls']);
+                        List<String> imageUrls = List<String>.from(data['imageUrls'] ?? []);
 
                         return DataRow(
                           cells: [
@@ -144,11 +151,12 @@ class _AdminPageState extends State<AdminPage> {
                               ),
                             ),
 
-                            DataCell(Text(data['selectedSite'])),
+                            DataCell(Text(data['selectedSite'] ?? '-')),
                             DataCell(Text(data['selectedSubSite'] ?? '-')),
-                            DataCell(Text(DateFormat.yMd('ar').format(data['date'].toDate()))),
+                            DataCell(Text(data['date'] != null ? DateFormat.yMd('ar').format(data['date'].toDate()) : '-')),
                             DataCell(Text(data['title'] ?? 'لا يوجد ملاحظة')),
-                            DataCell(Text(data['selectedCategory'])),
+                            DataCell(Text(data['selectedCategory'] ?? '-')),
+
                           ],
                         );
                       }).toList(),
@@ -253,37 +261,36 @@ class ImagePage extends StatelessWidget {
           child: SizedBox(
             width: 300,
             height: 300,
-            child: FutureBuilder(
-              future: loadImage(imageUrl),
-              builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  print('Error loading image: ${snapshot.error}');
-                  return Container(
-                    color: Colors.grey[300],
-                    child: Center(
-                      child: Icon(
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+              errorWidget: (context, url, error) => Container(
+                color: Colors.grey[300],
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
                         Icons.error_outline,
                         color: Colors.red,
                         size: 48.0,
                       ),
-                    ),
-                  );
-                } else {
-                  return Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                  );
-                }
-              },
+                      SizedBox(height: 8),
+                      Text(
+                        'Failed to load image',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         );
       },
     );
   }
-
   Future<bool> loadImage(String imageUrl) async {
     try {
       await NetworkImage(imageUrl).resolve(ImageConfiguration());

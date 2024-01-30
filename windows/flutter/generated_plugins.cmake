@@ -6,9 +6,11 @@ list(APPEND FLUTTER_PLUGIN_LIST
   bitsdojo_window_windows
   cloud_firestore
   file_selector_windows
+  firebase_auth
   firebase_core
   firebase_storage
   flutter_localization
+  url_launcher_windows
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
