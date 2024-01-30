@@ -19,11 +19,46 @@ class FormPage extends StatefulWidget {
 
 class _FormPageState extends State<FormPage> {
   late DateTime currentDate;
-  List<String> site = ['الطابق الاول', 'الطابق الثاني', 'الطابق الثالث'];
+  List<String> site = [
+    'فرع البيادر',
+    'تلاع العلي',
+    'فرع الياسمين',
+    'فرع وادي صقرة',
+    'فرع الجبيهة',
+    'فرع الوحدات',
+    'فرع طبربور',
+    'فرع الزرقاء',
+    'فرع اربد',
+    'مكتب شارع الحصن',
+    'فرع العقبة',
+    'مكتب مطار الملك الحسين',
+    'فرع دابوق',
+    'فرع الزرقاء الجديدة',
+    ' شارع المطار',
+    'مرج الحمام',
+    'العبدلي مول',
+    'مادبا',
+    'السلط',
+    'مطار الملكة علياء',
+    'باب المدينة',
+    'المفرق',
+    'دوار الداخلية',
+    'عبدون',
+    'شارع مكة',
+    'الكرك',
+    'ستي مول',
+    'تاج مول',
+    'مكتب الفصول الاربعة',
+    'زهران',
+    'سحاب',
+    'بيادر وادي السير',
+    'شميساني'
+  ];
   List<String> categories = [' صيانة', 'عمل غير امن', 'تطوير', 'تنظيف'];
 
   String? selectedSite;
-  String? selectedCategory; // Declare selectedCategory as late
+  String? selectedCategory;
+  String? selectedSubSite;
 
   List<Uint8List> _selectedImageBytesList = [];
   List<File> _selectedImageFileList = [];
@@ -32,11 +67,20 @@ class _FormPageState extends State<FormPage> {
   final TextEditingController ReporterController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
 
+  Map<String, List<String>> subSites = {
+    'شارع مكة': ['الطابق الاول', 'الطابق الثاني','الطابق الثالث','الطابق الارضي','طابق B1','طابق B2','طابق B3'],
+    'شميساني': ['الطابق الاول', 'الطابق الثاني','الطابق الثالث','الطابق الرابع','طابق B1','طابق B2'],
+    'زهران': ['طابق P1', 'طابق P2','طابق P3','طابق P4','طابق P5','طابق P6','الطابق الارضي','الطابق الاول', 'الطابق الثاني','الطابق الثالث','الطابق الرابع', 'الطابق الخامس','الطابق السادس','الطابق السابع', 'الطابق الثامن','الطابق التاسع','الطابق العاشر', 'الطابق الحادي عشر','الطابق الثاني عشر','الطابق الثالث عشر','الطابق الرابع عشر',],
+    'مطار الملكة علياء': ['المغادرة', 'الجوازات','الترانزيت','البوابة 1','مركز الطاقم','الجوازات 2','البوابة 2'],
+
+
+  };
+
   @override
   void initState() {
     super.initState();
     currentDate = DateTime.now();
-    selectedCategory = categories.first; // Initialize with the first category
+    selectedCategory = categories.first;
   }
 
   @override
@@ -80,6 +124,7 @@ class _FormPageState extends State<FormPage> {
                   Text(
                     DateFormat.yMMMMd('ar').format(currentDate),
                   ),
+
                   const SizedBox(height: 16),
                   buildDropdownBox(
                     labelText: 'التصنيف',
@@ -92,6 +137,39 @@ class _FormPageState extends State<FormPage> {
                     },
                   ),
                   const SizedBox(height: 16),
+
+                  buildDropdownBox(
+                    labelText: 'الموقع الرئيسي',
+                    items: site,
+                    value: selectedSite,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedSite = value;
+                        selectedSubSite = null; // Reset sub-site selection
+                      });
+                    },
+                  ),
+
+                  SizedBox(height: 16.0),
+                  // Display sub-site dropdown only if a main site is selected
+                  if (selectedSite != null && subSites.containsKey(selectedSite!))
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        buildDropdownBox(
+                          labelText: 'الموقع الفرعي:',
+                          items: subSites[selectedSite!]!,
+                          value: selectedSubSite,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedSubSite = value;
+                            });
+                          },
+                        ),
+
+                      ],
+                    ),
+                  const SizedBox(height: 16),
                   buildTextBox(
                     child: TextFormField(
                       controller: titleController,
@@ -99,17 +177,6 @@ class _FormPageState extends State<FormPage> {
                         labelText: 'وصف الملاحظة',
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  buildDropdownBox(
-                    labelText: 'الموقع',
-                    items: site,
-                    value: selectedSite,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedSite = value;
-                      });
-                    },
                   ),
                   const SizedBox(height: 16),
                   const Text(
@@ -131,7 +198,6 @@ class _FormPageState extends State<FormPage> {
                   buildTextBox(
                     child: TextFormField(
                       controller: emailController,
-                      // Define a TextEditingController for the email field
                       decoration: const InputDecoration(
                         labelText: 'البريد الإلكتروني للتواصل',
                       ),
@@ -277,23 +343,21 @@ class _FormPageState extends State<FormPage> {
     try {
       List<String> imageUrls = await _uploadImagesToFirebase();
 
-      // Prepare data to be saved to Firebase
       Map<String, dynamic> data = {
         'selectedSite': selectedSite,
         'selectedCategory': selectedCategory,
+        'selectedSubSite': selectedSubSite,
         'title': titleController.text,
         'reporter': ReporterController.text,
-        'email': emailController.text, // Include the contact email
+        'email': emailController.text,
         'date': Timestamp.fromDate(currentDate),
         'imageUrls': imageUrls,
       };
 
-      // Save data to Firestore
       await FirebaseFirestore.instance.collection('form_data').add(data);
 
       print('Form data saved to Firebase!');
 
-      // Show a snackbar to indicate successful submission
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('تم حفظ البيانات بنجاح'),
@@ -301,7 +365,6 @@ class _FormPageState extends State<FormPage> {
         ),
       );
 
-      // Prompt the user to submit another form or quit
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -311,22 +374,21 @@ class _FormPageState extends State<FormPage> {
             actions: <Widget>[
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
+                  Navigator.of(context).pop();
                 },
                 child: Text('لا'),
               ),
               TextButton(
                 onPressed: () {
-                  // Clear the form fields after submission
                   titleController.clear();
                   ReporterController.clear();
                   setState(() {
-                    selectedCategory = categories
-                        .first; // Reset selectedCategory to the initial value
+                    selectedCategory = categories.first;
                     selectedSite = null;
+                    selectedSubSite = null;
                     _selectedImageBytesList.clear();
                   });
-                  Navigator.of(context).pop(); // Close the dialog
+                  Navigator.of(context).pop();
                 },
                 child: Text('نعم'),
               ),
@@ -336,7 +398,7 @@ class _FormPageState extends State<FormPage> {
       );
     } catch (e) {
       print('Error saving form data: $e');
-      // Show an error snackbar if data saving fails
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('حدث خطأ أثناء حفظ البيانات'),

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-
 class AdminPage extends StatefulWidget {
   @override
   _AdminPageState createState() => _AdminPageState();
@@ -12,11 +11,7 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage> {
   TextEditingController _searchController = TextEditingController();
-  Map<String, String> statusMap = {
-    'normal': 'عادي',
-    'medium': 'متوسط',
-    'high': 'عالي',
-  };
+
   Map<String, String> selectedStatus = {};
   late String downloadURL; // Variable to store the download URL
   Future<void> downloadURLExample() async {
@@ -76,101 +71,88 @@ class _AdminPageState extends State<AdminPage> {
               Expanded(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    columnSpacing: 55.0,
-                    headingRowColor: MaterialStateColor.resolveWith((states) => Colors.grey[200]!),
-                    dataRowColor: MaterialStateColor.resolveWith((states) => Colors.white),
-                    columns: [
-                      DataColumn(label: Text('حذف', style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(label: Text('الصور', style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(label: Text('كاتب التقرير', style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(label: Text('الأولوية', style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(label: Text('الموقع', style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(label: Text('التاريخ', style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(label: Text('وصف الملاحظة', style: TextStyle(fontWeight: FontWeight.bold))), // New column
-                      DataColumn(label: Text(' التصنيف', style: TextStyle(fontWeight: FontWeight.bold))),
+                  child: SingleChildScrollView(
+                    child: DataTable(
+                      columnSpacing: 55.0,
+                      headingRowColor: MaterialStateColor.resolveWith((states) => Colors.grey[200]!),
+                      dataRowColor: MaterialStateColor.resolveWith((states) => Colors.white),
+                      columns: [
+                        DataColumn(label: Text('حذف', style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(label: Text('الصور', style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(label: Text('كاتب التقرير', style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(label: Text('الموقع', style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(label: Text('الموقع الفرعي', style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(label: Text('التاريخ', style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(label: Text('وصف الملاحظة', style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(label: Text(' التصنيف', style: TextStyle(fontWeight: FontWeight.bold))),
+                      ],
+                      rows: filteredData.map<DataRow>((document) {
+                        final Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                        List<String> imageUrls = List<String>.from(data['imageUrls']);
 
-                    ],
-                    rows: filteredData.map<DataRow>((document) {
-                      final Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                      List<String> imageUrls = List<String>.from(data['imageUrls']);
-
-                      return DataRow(
-                        cells: [
-                          DataCell(
-                            Checkbox(
-                              value: false,
-                              onChanged: (bool? value) {
-                                if (value!) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        title: Text("تأكيد الحذف"),
-                                        content: Text("هل أنت متأكد أنك تريد حذف هذا العنصر؟"),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: Text("لا"),
-                                          ),
-                                          TextButton(
-                                            onPressed: () {
-                                              FirebaseFirestore.instance.collection('form_data').doc(document.id).delete();
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: Text("نعم"),
-                                          ),
-                                        ],
-                                      );
-                                    },
+                        return DataRow(
+                          cells: [
+                            DataCell(
+                              Checkbox(
+                                value: false,
+                                onChanged: (bool? value) {
+                                  if (value!) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: Text("تأكيد الحذف"),
+                                          content: Text("هل أنت متأكد أنك تريد حذف هذا العنصر؟"),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: Text("لا"),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                FirebaseFirestore.instance.collection('form_data').doc(document.id).delete();
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: Text("نعم"),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
+                            DataCell(
+                              IconButton(
+                                icon: Icon(Icons.image),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ImagePage(imageUrls: imageUrls),
+                                    ),
                                   );
-                                }
-                              },
+                                },
+                              ),
                             ),
-                          ),
-                          DataCell(
-                            IconButton(
-                              icon: Icon(Icons.image),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ImagePage(imageUrls: imageUrls),
-                                  ),
-                                );
-                              },
+                            DataCell(
+                              InkWell(
+                                child: Text(data['reporter']),
+                              ),
                             ),
-                          ),
-                          DataCell(
-                            InkWell(
-                              child: Text(data['reporter']),
-                            ),
-                          ),
-                          DataCell(
-                            DropdownButton<String>(
-                              items: statusMap.keys.map((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(statusMap[value]!),
-                                );
-                              }).toList(),
-                              value: selectedStatus[data['reporter']] ?? 'normal',
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  selectedStatus[data['reporter']] = newValue!;
-                                });
-                              },
-                            ),
-                          ),
-                          DataCell(Text(data['selectedSite'])),
-                          DataCell(Text(DateFormat.yMd('ar').format(data['date'].toDate()))),
-                          DataCell(Text(data['title'] ?? 'لا يوجد ملاحظة')),
-                          DataCell(Text(data['selectedCategory'])),
-                        ],
-                      );
-                    }).toList(),
+
+                            DataCell(Text(data['selectedSite'])),
+                            DataCell(Text(data['selectedSubSite'] ?? '-')),
+                            DataCell(Text(DateFormat.yMd('ar').format(data['date'].toDate()))),
+                            DataCell(Text(data['title'] ?? 'لا يوجد ملاحظة')),
+                            DataCell(Text(data['selectedCategory'])),
+                          ],
+                        );
+                      }).toList(),
+                    ),
                   ),
                 ),
               ),
